@@ -1,0 +1,3 @@
+Job completed successfully!
+Data file: /job/data_ybl
+Arguments: ['--data', '/job/data_ybl', '--result', '/job/output_anq']

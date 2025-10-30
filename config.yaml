@@ -1,0 +1,16 @@
+name: test-job
+desc: Test job for DataSphere
+
+cmd: python -m verl.trainer.fsdp_sft_trainer --config-path ./verl/verl/trainer --config-name sft_qwen_1.5b
+
+env:
+  python: auto
+
+inputs:
+  - train_data.parquet: TRAIN_DATA
+  - val_data.parquet: VAL_DATA
+
+outputs:
+  - output_dir: OUTPUT_DIR
+
+cloud-instance-type: g1.1
