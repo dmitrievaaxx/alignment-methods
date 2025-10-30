@@ -1,0 +1,10 @@
+name: test-job
+desc: Test job for DataSphere
+cmd: python main.py --data ${DATA} --result ${OUTPUT}
+env:
+  python: auto
+inputs:
+  - sample_input.txt: DATA
+outputs:
+  - output.txt: OUTPUT
+cloud-instance-type: c1.4
