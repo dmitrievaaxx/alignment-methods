@@ -42,3 +42,4 @@ PS C:\Users\darya\Documents\alignment-methods> python check_verl.py
 
 **Замечания:**    
 Я в C:\Users\darya\Documents\alignment-methods\verl\verl\trainer создала файл под названием sft_trainer_minimal.yaml для тестового запуска
+У меня в итоге запустилось: python -m datasphere.main project job execute -p bt1jvegm7p69m5a6rnoa -c config.yaml
