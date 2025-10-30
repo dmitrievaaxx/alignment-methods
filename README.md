@@ -1,3 +1,4 @@
+31.10.2025
 Тебе нужно: 
 1) Перенести Yandex.Datasphere в консоль:
    - pip install datasphere
