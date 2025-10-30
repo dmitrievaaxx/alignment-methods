@@ -15,7 +15,7 @@ y0__xClps-ABBjB3RMggLSY-BQwpf2rsgiq1qZpFf1mc81i6jZmzqwVjcJTsg
 11. pip install -e . (сделано)
 12. Проверка python check_verl.py
 
-##Тестовый запуск:
+## Тестовый запуск:
 - Создать файл в C:\Users\darya\Documents\alignment-methods\verl\verl\trainer под названием sft_trainer_minimal.yaml (создано)
 - Copy-Item data\train.parquet train_data.parquet (сделано)
   Copy-Item data\val.parquet val_data.parquet (сделано)
