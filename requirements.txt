@@ -1,0 +1,17 @@
+# Core dependencies from verl
+accelerate
+codetiming
+datasets
+dill
+flash-attn>=2.5.0
+hydra-core
+numpy
+pandas
+peft
+pyarrow>=19.0.0
+ray[default]
+tensordict<=0.6.2
+transformers
+torch
+torchvision
+
