@@ -36,7 +36,6 @@ PS C:\Users\darya\Documents\alignment-methods> python check_verl.py
 ```
 
 3) Тестовый запуск
-   - установить библиотеку pip install wandb  
    ```
    datasphere project job execute -p bt1jvegm7p69m5a6rnoa -c config.yaml
    ```
