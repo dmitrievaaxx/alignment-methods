@@ -40,6 +40,11 @@ PS C:\Users\darya\Documents\alignment-methods> python check_verl.py
    datasphere project job execute -p bt1jvegm7p69m5a6rnoa -c config.yaml
    ```
 
-**Замечания:**    
+**Замечания:**
 Я в C:\Users\darya\Documents\alignment-methods\verl\verl\trainer создала файл под названием sft_trainer_minimal.yaml для тестового запуска  
-У меня в итоге запустилось: python -m datasphere.main project job execute -p bt1jvegm7p69m5a6rnoa -c config.yaml
+У меня в итоге запустилось: python -m datasphere.main project job execute -p bt1jvegm7p69m5a6rnoa -c config.yaml, однако ошибка в логах из-за несовместимости в библиотеках.  
+
+---
+02.11.2025  
+## Цель  
+Сделать успешный запуск без ошибок. На данный момент ошибки из-за несовместимости библиотек. Успешную попытку запушить в репозиторий
