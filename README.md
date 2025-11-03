@@ -197,7 +197,15 @@ data:
   pin_memory: true
 ```
 
-**Главное:** исправить файл `fsdp_sft_trainer.py`: dtype - для отсутсвия предупреждения, attn_implementation="eager". Должно быть так:  
+**Главное:** исправить файл `fsdp_sft_trainer.py`: dtype - для отсутсвия предупреждения, attn_implementation="eager", добавить в начале отключения.  
+В самом начале файла указать:  
+```
+import os
+os.environ['USE_FLASH_ATTENTION'] = '0'
+os.environ['TRANSFORMERS_USE_FLASH_ATTENTION'] = '0'
+os.environ['FORCE_ATTENTION_IMPLEMENTATION'] = 'eager'
+```
+Найти строчку self.model: PreTrainedModel = AutoModelForCausalLM.from_pretrained(...) и в ней исправить attn_implementation="eager" и dtype:  
 ```
             self.model: PreTrainedModel = AutoModelForCausalLM.from_pretrained(
                 local_model_path,
