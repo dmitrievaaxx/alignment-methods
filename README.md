@@ -50,7 +50,7 @@ PS C:\Users\darya\Documents\alignment-methods> python check_verl.py
 ---
 ## 03.11.2025  
 `config.yaml` в корне проекта 
-```
+```yaml
 # config.yaml
 name: test-job-dmitrieva
 desc: Simple working version
@@ -85,7 +85,7 @@ cloud-instance-type: g1.1
 ```
 
 Cоздать файл `disable_flash_attn.py` в корне проекта
-```
+```python
 # disable_flash_attn.py
 import os
 import sys
@@ -141,7 +141,7 @@ print("✓ Flash Attention полностью отключен")
 ```
 
 `sft_qwen_1.5b.yaml` в verl/verl/trainer
-```
+```yaml
 # sft_qwen_1.5b.yaml
 trainer:
   project_name: gsm8k_qwen_sft
@@ -199,14 +199,14 @@ data:
 
 **Главное:** исправить файл `fsdp_sft_trainer.py` в verl/verl/trainer
 В самом начале файла указать:  
-```
+```python
 import os
 os.environ['USE_FLASH_ATTENTION'] = '0'
 os.environ['TRANSFORMERS_USE_FLASH_ATTENTION'] = '0'
 os.environ['FORCE_ATTENTION_IMPLEMENTATION'] = 'eager'
 ```
 Найти строчку self.model: PreTrainedModel = AutoModelForCausalLM.from_pretrained(...) и в ней исправить attn_implementation="eager" и dtype:  
-```
+```python
             self.model: PreTrainedModel = AutoModelForCausalLM.from_pretrained(
                 local_model_path,
                 config=config,
