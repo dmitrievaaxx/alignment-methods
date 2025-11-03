@@ -189,7 +189,7 @@ data:
   global_batch_size: 32
   micro_batch_size_per_gpu: 2
   grad_accumulation_steps: 16
-  max_length: 512
+  max_length: 1024
   prompt_key: input
   response_key: output
   balance_dp_token: true
