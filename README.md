@@ -1,5 +1,5 @@
-31.10.2025
-Тебе нужно: 
+## 31.10.2025
+
 1) Перенести Yandex.Datasphere в консоль:
    - pip install datasphere
    - irm https://storage.yandexcloud.net/yandexcloud-yc/install.ps1 | iex
@@ -21,9 +21,12 @@ PS C:\Users\darya\Documents\alignment-methods> datasphere project job execute -p
 2025-10-31 01:21:28,639 - [INFO] - files are downloaded
 2025-10-31 01:21:28,639 - [INFO] - job completed successfully
 ```
-
-2) Установить зависимости для verl
+2) Verl
    - pip install torch torchvision torchaudio transformers datasets accelerate bitsandbytes
+   - git clone https://github.com/volcengine/verl.git
+   - cd verl
+   - git checkout 8b33abd84f360473f05e5a750aef36e974340cce
+   - Изменить в setup.py: long_description = (this_directory / "README.md").read_text(encoding="utf-8")
    - pip install -e .
   
 Проверка: 
@@ -39,16 +42,10 @@ PS C:\Users\darya\Documents\alignment-methods> python check_verl.py
    ```
    datasphere project job execute -p bt1jvegm7p69m5a6rnoa -c config.yaml
    ```
-
-**Замечания:**
-Я в C:\Users\darya\Documents\alignment-methods\verl\verl\trainer создала файл под названием sft_trainer_minimal.yaml для тестового запуска  
-У меня в итоге запустилось: python -m datasphere.main project job execute -p bt1jvegm7p69m5a6rnoa -c config.yaml, однако ошибка в логах из-за несовместимости в библиотеках.  
-
----
-## 02.11.2025  
-Цель    
-Сделать успешный запуск без ошибок. На данный момент ошибки из-за несовместимости библиотек. Успешную попытку запушить в репозиторий  
-
+   или
+   ```
+   python -m datasphere.main project job execute -p bt1jvegm7p69m5a6rnoa -c config.yaml
+   ```
 
 ---
 ## 03.11.2025  
