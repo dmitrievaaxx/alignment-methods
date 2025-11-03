@@ -197,7 +197,7 @@ data:
   pin_memory: true
 ```
 
-**Главное:** исправить файл `fsdp_sft_trainer.py`: dtype - для отсутсвия предупреждения, attn_implementation="eager", добавить в начале отключения.  
+**Главное:** исправить файл `fsdp_sft_trainer.py`:  
 В самом начале файла указать:  
 ```
 import os
