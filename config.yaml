@@ -1,56 +1,29 @@
-name: test-job-fixed
-desc: Fixed version with compatible dependencies
+# config.yaml
+name: successful-training
+desc: Simple working version
 
 cmd: |
+  export PIP_ROOT_USER_ACTION=ignore
+  export USE_FLASH_ATTENTION=0
+  export TRANSFORMERS_USE_FLASH_ATTENTION=0
   pip install --upgrade pip
-  pip uninstall torch torchvision torchaudio torchtext torchdata -y || true
-  pip cache purge
-  
-  pip install "importlib-metadata==6.8.0" "packaging==23.2" --force-reinstall
-  pip install wheel ninja "sympy==1.13.1" "triton==3.1.0"
-  
-  pip install torch==2.5.1+cu121 torchvision==0.20.1+cu121 torchaudio==2.5.1+cu121 \
-    --index-url https://download.pytorch.org/whl/cu121 \
-    --force-reinstall \
-    --no-deps
-  
-  pip install nvidia-cublas-cu12==12.1.3.1 nvidia-cuda-cupti-cu12==12.1.105 \
-    nvidia-cuda-nvrtc-cu12==12.1.105 nvidia-cuda-runtime-cu12==12.1.105 \
-    nvidia-cudnn-cu12==9.1.0.70 nvidia-cufft-cu12==11.0.2.54 \
-    nvidia-curand-cu12==10.3.2.106 nvidia-cusolver-cu12==11.4.5.107 \
-    nvidia-cusparse-cu12==12.1.0.106 nvidia-nccl-cu12==2.21.5 \
-    nvidia-nvtx-cu12==12.1.105
-  
-  pip install "fsspec[http]==2025.9.0" --force-reinstall
-  pip install accelerate==0.20.0 transformers==4.50.0 datasets==4.3.0 peft==0.10.0
-  pip install wandb codetiming dill hydra-core numpy pandas "pyarrow>=19.0.0" "ray[default]"
-    
-  python -c "
-  import torch, torchvision, torchaudio, fsspec
-  print(f'PyTorch: {torch.__version__}')
-  print(f'CUDA available: {torch.cuda.is_available()}')
-  print(f'CUDA version: {torch.version.cuda}')
-  print(f'TorchVision: {torchvision.__version__}') 
-  print(f'TorchAudio: {torchaudio.__version__}')
-  print(f'FSSpec: {fsspec.__version__}')
-  assert '2.5.1' in torch.__version__, f'Wrong torch version: {torch.__version__}'
-  assert '0.20.1' in torchvision.__version__, f'Wrong torchvision version: {torchvision.__version__}'
-  print('✅ All versions correct!')
-  "
-  
-  python -c "import transformers; print(f'Transformers: {transformers.__version__}'); from transformers import PreTrainedModel; print('✅ Transformers imports OK')"
-  
-  python -c "import verl; import os; import shutil; verl_path = verl.__path__[0]; config_src = os.path.join(verl_path, 'trainer', 'sft_qwen_1.5b.yaml'); config_dir = '/job/verl_config'; os.makedirs(config_dir, exist_ok=True); shutil.copy(config_src, os.path.join(config_dir, 'sft_qwen_1.5b.yaml'))"
+  pip install torch==2.5.1+cu121 torchvision==0.20.1+cu121 torchaudio==2.5.1+cu121 --index-url https://download.pytorch.org/whl/cu121
+  pip install packaging ninja wheel setuptools psutil
+  pip install flash-attn>=2.5.0 --no-build-isolation --no-cache-dir
+  pip install accelerate transformers datasets peft wandb hydra-core omegaconf tensordict ray codetiming
+  mkdir -p /job
+  cp -r ${VERL_DIR} /job/verl
+  mkdir -p /job/verl_config
+  cp /job/verl/verl/trainer/sft_qwen_1.5b.yaml /job/verl_config/
   python ${UPDATE_CONFIG} /job/verl_config sft_qwen_1.5b
-  torchrun --standalone --nnodes=1 --nproc_per_node=1 -m verl.trainer.fsdp_sft_trainer --config-path /job/verl_config --config-name sft_qwen_1.5b data.train_files.0=${TRAIN_DATA} data.val_files.0=${VAL_DATA}
-
-env:
-  python: auto
+  cd /job/verl && PYTHONPATH=/job/verl:$PYTHONPATH python ${DISABLE_FLASH_ATTN} && PYTHONPATH=/job/verl:$PYTHONPATH torchrun --standalone --nnodes=1 --nproc_per_node=1 verl/trainer/fsdp_sft_trainer.py --config-path /job/verl_config --config-name sft_qwen_1.5b data.train_files="[${TRAIN_DATA}]" data.val_files="[${VAL_DATA}]"
 
 inputs:
   - train_data.parquet: TRAIN_DATA
   - val_data.parquet: VAL_DATA
   - update_config.py: UPDATE_CONFIG
+  - verl: VERL_DIR
+  - disable_flash_attn.py: DISABLE_FLASH_ATTN
 
 outputs:
   - output_dir: OUTPUT_DIR
