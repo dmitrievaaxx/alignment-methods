@@ -45,6 +45,172 @@ PS C:\Users\darya\Documents\alignment-methods> python check_verl.py
 У меня в итоге запустилось: python -m datasphere.main project job execute -p bt1jvegm7p69m5a6rnoa -c config.yaml, однако ошибка в логах из-за несовместимости в библиотеках.  
 
 ---
-02.11.2025  
-## Цель  
-Сделать успешный запуск без ошибок. На данный момент ошибки из-за несовместимости библиотек. Успешную попытку запушить в репозиторий
+## 02.11.2025  
+Цель    
+Сделать успешный запуск без ошибок. На данный момент ошибки из-за несовместимости библиотек. Успешную попытку запушить в репозиторий  
+
+
+---
+## 03.11.2025  
+`config.yaml`
+```
+# config.yaml
+name: test-job-dmitrieva
+desc: Simple working version
+
+cmd: |
+  export PIP_ROOT_USER_ACTION=ignore
+  export USE_FLASH_ATTENTION=0
+  export TRANSFORMERS_USE_FLASH_ATTENTION=0
+  pip install --upgrade pip
+  pip install torch==2.5.1+cu121 torchvision==0.20.1+cu121 torchaudio==2.5.1+cu121 --index-url https://download.pytorch.org/whl/cu121
+  pip install packaging ninja wheel setuptools psutil
+  pip install flash-attn>=2.5.0 --no-build-isolation --no-cache-dir
+  pip install accelerate transformers datasets peft wandb hydra-core omegaconf tensordict ray codetiming
+  mkdir -p /job
+  cp -r ${VERL_DIR} /job/verl
+  mkdir -p /job/verl_config
+  cp /job/verl/verl/trainer/sft_qwen_1.5b.yaml /job/verl_config/
+  python ${UPDATE_CONFIG} /job/verl_config sft_qwen_1.5b
+  cd /job/verl && PYTHONPATH=/job/verl:$PYTHONPATH python ${DISABLE_FLASH_ATTN} && PYTHONPATH=/job/verl:$PYTHONPATH torchrun --standalone --nnodes=1 --nproc_per_node=1 verl/trainer/fsdp_sft_trainer.py --config-path /job/verl_config --config-name sft_qwen_1.5b data.train_files="[${TRAIN_DATA}]" data.val_files="[${VAL_DATA}]"
+
+inputs:
+  - train_data.parquet: TRAIN_DATA
+  - val_data.parquet: VAL_DATA
+  - update_config.py: UPDATE_CONFIG
+  - verl: VERL_DIR
+  - disable_flash_attn.py: DISABLE_FLASH_ATTN
+
+outputs:
+  - output_dir: OUTPUT_DIR
+
+cloud-instance-type: g1.1
+```
+
+Cоздать файл `disable_flash_attn.py`  
+```
+# disable_flash_attn.py
+import os
+import sys
+
+# ЖЕСТКО отключаем flash attention ДО ЛЮБЫХ импортов
+os.environ['USE_FLASH_ATTENTION'] = '0'
+os.environ['TRANSFORMERS_USE_FLASH_ATTENTION'] = '0' 
+os.environ['DISABLE_FLASH_ATTENTION'] = '1'
+os.environ['FORCE_ATTENTION_IMPLEMENTATION'] = 'eager'
+os.environ['CUDA_LAUNCH_BLOCKING'] = '1'
+
+# Для полного отключения
+os.environ['FLASH_ATTENTION_SKIP'] = '1'
+os.environ['FLASH_ATTENTION_ALWAYS_DISABLE'] = '1'
+
+print("✓ Flash Attention переменные окружения установлены")
+
+# Импортируем и патчим
+import transformers
+
+# Агрессивный патчинг
+def disable_flash_attn():
+    # Патчим все возможные функции проверки
+    transformers.utils.import_utils.is_flash_attn_2_available = lambda: False
+    transformers.utils.import_utils.is_flash_attn_greater_or_equal_2_10 = lambda: False  
+    transformers.utils.import_utils.can_use_flash_attention_2 = lambda *args, **kwargs: False
+    
+    # Патчим для разных версий transformers
+    if hasattr(transformers.utils.import_utils, 'is_flash_attn_available'):
+        transformers.utils.import_utils.is_flash_attn_available = lambda: False
+    
+    # Патчим конфигурацию моделей
+    try:
+        from transformers import PretrainedConfig
+        original_from_pretrained = PretrainedConfig.from_pretrained
+        
+        @classmethod
+        def patched_from_pretrained(cls, pretrained_model_name_or_path, **kwargs):
+            # Принудительно отключаем flash attention в конфиге
+            kwargs['attn_implementation'] = 'eager'
+            result = original_from_pretrained(pretrained_model_name_or_path, **kwargs)
+            if hasattr(result, 'attn_implementation'):
+                result.attn_implementation = 'eager'
+            return result
+            
+        PretrainedConfig.from_pretrained = patched_from_pretrained
+        print("✓ Патч PretrainedConfig применен")
+    except Exception as e:
+        print(f"⚠ Ошибка патчинга конфига: {e}")
+
+disable_flash_attn()
+print("✓ Flash Attention полностью отключен")
+```
+
+`sft_qwen_1.5b.yaml`  
+```
+# sft_qwen_1.5b.yaml
+trainer:
+  project_name: gsm8k_qwen_sft
+  experiment_name: sft_1.5b_12gb
+  logger: ['console']  
+  default_local_dir: ./checkpoints
+  total_epochs: 1
+  save_freq: 500
+  eval_freq: 100
+  test_freq: 100
+  total_training_steps: 1000
+  seed: 42
+  nnodes: 1
+  n_gpus_per_node: 1
+  save_total_limit: 2
+  logging_steps: 10
+
+model:
+  partial_pretrain: "Qwen/Qwen2.5-1.5B"
+  trust_remote_code: true
+  strategy: fsdp
+  enable_gradient_checkpointing: true
+  lora_rank: 8
+  lora_alpha: 16
+  target_modules: ["q_proj", "k_proj", "v_proj", "o_proj"]
+  use_flash_attention: false
+  attn_implementation: "eager"
+  dtype: "bfloat16" 
+  fsdp_config:
+    sharding_strategy: "NO_SHARD"
+    mixed_precision: "bf16"
+    use_orig_params: true
+
+optim:
+  lr: 2e-5
+  betas: [0.9, 0.95]
+  weight_decay: 0.01
+  warmup_steps_ratio: 0.03
+  lr_scheduler: cosine
+  clip_grad: 1.0
+
+data:
+  train_files: [] 
+  val_files: []
+  global_batch_size: 32
+  micro_batch_size_per_gpu: 2
+  grad_accumulation_steps: 16
+  max_length: 512
+  prompt_key: input
+  response_key: output
+  balance_dp_token: true
+  num_workers: 4
+  pin_memory: true
+```
+
+**Главное:** исправить файл `fsdp_sft_trainer.py`: dtype - для отсутсвия предупреждения, attn_implementation="eager". Должно быть так:  
+```
+            self.model: PreTrainedModel = AutoModelForCausalLM.from_pretrained(
+                local_model_path,
+                config=config,
+                dtype=torch_dtype,
+                attn_implementation="eager",
+                trust_remote_code=trust_remote_code,
+            )
+```
+
+
+
+
