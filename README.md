@@ -49,7 +49,7 @@ PS C:\Users\darya\Documents\alignment-methods> python check_verl.py
 
 ---
 ## 03.11.2025  
-`config.yaml`
+`config.yaml` в корне проекта 
 ```
 # config.yaml
 name: test-job-dmitrieva
@@ -84,7 +84,7 @@ outputs:
 cloud-instance-type: g1.1
 ```
 
-Cоздать файл `disable_flash_attn.py`  
+Cоздать файл `disable_flash_attn.py` в корне проекта
 ```
 # disable_flash_attn.py
 import os
@@ -140,7 +140,7 @@ disable_flash_attn()
 print("✓ Flash Attention полностью отключен")
 ```
 
-`sft_qwen_1.5b.yaml`  
+`sft_qwen_1.5b.yaml` в verl/verl/trainer
 ```
 # sft_qwen_1.5b.yaml
 trainer:
@@ -197,7 +197,7 @@ data:
   pin_memory: true
 ```
 
-**Главное:** исправить файл `fsdp_sft_trainer.py`:  
+**Главное:** исправить файл `fsdp_sft_trainer.py` в verl/verl/trainer
 В самом начале файла указать:  
 ```
 import os
