@@ -276,26 +276,25 @@ api {
 pip install clearml
 ```
 
-- В файл `update_config.py` в функцию `update_config` в самом начале добавляем:
-```python
-    try:
-        from clearml import Task
-        task = Task.init(
-            project_name="alignment-methods",
-            task_name="sft_1.5b_12gb_offline_wandb",
-            auto_connect_frameworks=True
-        )
-        print(f"ClearML initialized: {task.id}")
-    except Exception as e:
-        print(f"ClearML initialization skipped: {e}")
-```
-
-**Хуйня**  
 - Изменения в файле `fsdp_sft_trainer.py`:
-  1. В методе __init__ класса FSDPSFTTrainer добавить строку: `self.global_step = 0`  
-  2. В методе training_step добавить перед return:  
-  ```python
-          try:
+  1. В самом начале файла добавить:
+```python
+import os
+try:
+    from clearml import Task
+    task = Task.init(
+        project_name="alignment-methods",
+        task_name="sft_1.5b_12gb_offline_wandb", 
+        auto_connect_frameworks=True
+    )
+    print(f"🎯 ClearML INITIALIZED: {task.id}")
+except Exception as e:
+    print(f"💥 ClearML INIT FAILED: {e}")
+```
+  2. В методе `init` класса FSDPSFTTrainer добавить строку: `self.global_step = 0`  
+  3. В методе `training_step` добавить перед return:  
+```python
+        try:
             from clearml import Task
             task = Task.current_task()
             print(f"🔍 ClearML debug: task={task}, has_logger={task and task.logger}")
@@ -308,16 +307,16 @@ pip install clearml
                 print("❌ ClearML: no task or logger")
         except Exception as e:
             print(f"❌ ClearML error: {e}")
-        
+
         self.global_step += 1
-  ```
-  3. В методе validation_step добавить перед return:  
-  ```python
-          try:
+```
+  4. В методе `validation_step` добавить перед return:  
+```python
+        try:
             from clearml import Task
             task = Task.current_task()
             if task and task.logger:
                 task.logger.report_scalar("validation", "loss", loss.item(), iteration=self.global_step)
         except:
             pass
-  ```
+```
