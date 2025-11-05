@@ -261,73 +261,31 @@ api {
   }
 }
 ```
-Поэтому добавляем в `config.yaml` (запушено в репозиторий):  
+- Поэтому добавляем в `config.yaml` (запушено в репозиторий):  
+  
+После `export WANDB_MODE=offline` добавить:  
 ```yaml
   export CLEARML_API_HOST=https://api.clear.ml
   export CLEARML_WEB_HOST=https://app.clear.ml  
   export CLEARML_FILES_HOST=https://files.clear.ml
   export CLEARML_API_ACCESS_KEY="1115V427IJEV3GB0UZMCHFD8XPCLO9"
   export CLEARML_API_SECRET_KEY="3k9gBL0lsd9iKBzHvaUpjwXOYtgI7HObE9De98qMDnrBQ0WZQrwITY9Q2PcR4kWWmPs"
-```  
-
-Добавляем `pip install clearml` после `pip install wandb --upgrade`  
-
-Добавляем:  
+```
+После `pip install wandb --upgrade` добавить:  
 ```yaml
-inputs:
-  - train_data.parquet: TRAIN_DATA
-  - val_data.parquet: VAL_DATA
-  - update_config.py: UPDATE_CONFIG
-  - verl: VERL_DIR
-  - disable_flash_attn.py: DISABLE_FLASH_ATTN
-  - clearml_setup.py: CLEARML_SETUP
+pip install clearml
 ```
 
-Cоздаем файл `clearml_setup.py` (запушено в репозиторий):  
+- В файл `update_config.py` в функцию `update_config` в самом начале добавляем:
 ```python
-# clearml_setup.py
-import os
-from clearml import Task
-
-def setup_clearml():
     try:
+        from clearml import Task
         task = Task.init(
             project_name="alignment-methods",
             task_name="sft_1.5b_12gb_offline_wandb",
-            auto_connect_frameworks={
-                'pytorch': True,
-                'tensorflow': False,
-                'tensorboard': True,
-                'matplotlib': True,
-                'xgboost': False,
-                'scikit': True,
-                'fastai': False,
-                'lightgbm': False,
-                'hydra': True,
-                'detectron2': False,
-                'transformers': True,
-                'jsonargparse': True
-            }
+            auto_connect_frameworks=True
         )
-        
-        # Мгновенная отправка метрик
-        task.get_logger().set_reporting(enable_immediate_reporting=True)
-        
-        # Сохраняем конфигурацию
-        config_path = "/job/verl_config/sft_qwen_1.5b.yaml"
-        if os.path.exists(config_path):
-            task.connect_configuration(config_path, name="training_config")
-            print("Config saved to ClearML")
-        
-        task.logger.report_text("Starting training")
-        
-        print(f"ClearML started: {task.id}")
-        return task
-        
+        print(f"ClearML initialized: {task.id}")
     except Exception as e:
-        print(f"ClearML failed: {e}")
-        return None
-
-if __name__ == "__main__":
-    setup_clearml()
+        print(f"ClearML initialization skipped: {e}")
 ```
