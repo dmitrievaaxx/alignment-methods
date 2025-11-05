@@ -283,7 +283,7 @@ inputs:
   - clearml_setup.py: CLEARML_SETUP
 ```
 
-Cоздаем файл `clearml_setup.py`:  
+Cоздаем файл `clearml_setup.py` (запушено в репозиторий):  
 ```python
 # clearml_setup.py
 import os
