@@ -307,7 +307,7 @@ pip install clearml
         except Exception as e:
             print(f"❌ ClearML error: {e}")
         
-           self.global_step += 1
+        self.global_step += 1
   ```
   3. В методе validation_step добавить перед return:  
   ```python
