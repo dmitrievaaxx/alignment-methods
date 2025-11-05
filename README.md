@@ -246,6 +246,93 @@ trainer:
 - `pip install wandb --upgrade` после строчки `pip install accelerate transformers datasets peft wandb hydra-core omegaconf tensordict ray codetiming`
 
 2. Для устранения предупреждения в файле `fsdp_sft_trainer.py` исправлены все `FULL_SHARD` на `NO_SHARD`
+3. ✅ ClearML online
+   
+```python
+api {
+  # Dasha Dmitrieva's workspace
+  web_server: https://app.clear.ml/
+  api_server: https://api.clear.ml
+  files_server: https://files.clear.ml
+  # alighment-methods
+  credentials {
+    "access_key" = "1115V427IJEV3GB0UZMCHFD8XPCLO9"
+    "secret_key" = "3k9gBL0lsd9iKBzHvaUpjwXOYtgI7HObE9De98qMDnrBQ0WZQrwITY9Q2PcR4kWWmPs"
+  }
+}
+```
+Поэтому добавляем в `config.yaml`:  
+```yaml
+  export CLEARML_API_HOST=https://api.clear.ml
+  export CLEARML_WEB_HOST=https://app.clear.ml  
+  export CLEARML_FILES_HOST=https://files.clear.ml
+  export CLEARML_API_ACCESS_KEY="1115V427IJEV3GB0UZMCHFD8XPCLO9"
+  export CLEARML_API_SECRET_KEY="3k9gBL0lsd9iKBzHvaUpjwXOYtgI7HObE9De98qMDnrBQ0WZQrwITY9Q2PcR4kWWmPs"
+```  
 
+Добавляем `pip install clearml` после `pip install wandb --upgrade`  
 
+Добавляем:  
+```yaml
+inputs:
+  - train_data.parquet: TRAIN_DATA
+  - val_data.parquet: VAL_DATA
+  - update_config.py: UPDATE_CONFIG
+  - verl: VERL_DIR
+  - disable_flash_attn.py: DISABLE_FLASH_ATTN
+  - clearml_setup.py: CLEARML_SETUP
+```
+
+Cоздаем файл `clearml_setup.py`:  
+```python
+# clearml_setup.py
+import os
+from clearml import Task
+
+def setup_clearml():
+    """Initialize ClearML task for experiment tracking"""
+    try:
+        task = Task.init(
+            project_name="alignment-methods",
+            task_name="sft_1.5b_12gb_offline_wandb",
+            auto_connect_frameworks={
+                'pytorch': True,
+                'tensorflow': False,
+                'tensorboard': True,
+                'matplotlib': True,
+                'xgboost': False,
+                'scikit': True,
+                'fastai': False,
+                'lightgbm': False,
+                'hydra': True,
+                'detectron2': False,
+                'transformers': True,
+                'jsonargparse': True
+            }
+        )
+        
+        # ✅ СОХРАНЯЕМ КОНФИГУРАЦИЮ ДЛЯ ВОСПРОИЗВОДИМОСТИ
+        config_path = "/job/verl_config/sft_qwen_1.5b.yaml"
+        if os.path.exists(config_path):
+            task.connect_configuration(config_path, name="training_config")
+            print("✅ Training configuration saved to ClearML")
+        else:
+            print("⚠️ Config file not found, skipping configuration logging")
+        
+        task.logger.report_text("Starting training with W&B offline + ClearML online")
+        
+        print("✅ ClearML task initialized successfully")
+        print(f"🔗 Task ID: {task.id}")
+        print(f"🔗 View at: {task.get_logger().get_base_url()}")  
+        
+        return task
+        
+    except Exception as e:
+        print(f"⚠️ ClearML initialization failed: {e}")
+        print("📝 Training will continue without ClearML")
+        return None
+
+if __name__ == "__main__":
+    setup_clearml()
+```
 
