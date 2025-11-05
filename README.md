@@ -291,8 +291,8 @@ try:
 except Exception as e:
     print(f"💥 ClearML INIT FAILED: {e}")
 ```
-  2. В методе `init` класса FSDPSFTTrainer добавить строку: `self.global_step = 0`  
-  3. В методе `training_step` добавить перед return:  
+   2. В методе `init` класса FSDPSFTTrainer добавить строку: `self.global_step = 0`  
+   3. В методе `training_step` добавить перед return:  
 ```python
         try:
             from clearml import Task
@@ -310,7 +310,7 @@ except Exception as e:
 
         self.global_step += 1
 ```
-  4. В методе `validation_step` добавить перед return:  
+   4. В методе `validation_step` добавить перед return:  
 ```python
         try:
             from clearml import Task
