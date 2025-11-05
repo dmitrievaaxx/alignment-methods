@@ -290,7 +290,6 @@ import os
 from clearml import Task
 
 def setup_clearml():
-    """Initialize ClearML task for experiment tracking"""
     try:
         task = Task.init(
             project_name="alignment-methods",
@@ -311,28 +310,24 @@ def setup_clearml():
             }
         )
         
-        # ✅ СОХРАНЯЕМ КОНФИГУРАЦИЮ ДЛЯ ВОСПРОИЗВОДИМОСТИ
+        # Мгновенная отправка метрик
+        task.get_logger().set_reporting(enable_immediate_reporting=True)
+        
+        # Сохраняем конфигурацию
         config_path = "/job/verl_config/sft_qwen_1.5b.yaml"
         if os.path.exists(config_path):
             task.connect_configuration(config_path, name="training_config")
-            print("✅ Training configuration saved to ClearML")
-        else:
-            print("⚠️ Config file not found, skipping configuration logging")
+            print("Config saved to ClearML")
         
-        task.logger.report_text("Starting training with W&B offline + ClearML online")
+        task.logger.report_text("Starting training")
         
-        print("✅ ClearML task initialized successfully")
-        print(f"🔗 Task ID: {task.id}")
-        print(f"🔗 View at: {task.get_logger().get_base_url()}")  
-        
+        print(f"ClearML started: {task.id}")
         return task
         
     except Exception as e:
-        print(f"⚠️ ClearML initialization failed: {e}")
-        print("📝 Training will continue without ClearML")
+        print(f"ClearML failed: {e}")
         return None
 
 if __name__ == "__main__":
     setup_clearml()
 ```
-
