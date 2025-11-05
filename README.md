@@ -289,3 +289,33 @@ pip install clearml
     except Exception as e:
         print(f"ClearML initialization skipped: {e}")
 ```
+- Изменения в файле `fsdp_sft_trainer.py`:
+  1. В методе __init__ класса FSDPSFTTrainer добавить строку: `self.global_step = 0`  
+  2. В методе training_step добавить перед return:  
+  ```python
+          try:
+            from clearml import Task
+            task = Task.current_task()
+            print(f"🔍 ClearML debug: task={task}, has_logger={task and task.logger}")
+            if task and task.logger:
+                print(f"📊 ClearML logging: loss={step_loss.detach().item()}, lr={lr}, step={self.global_step}")
+                task.logger.report_scalar("train", "loss", step_loss.detach().item(), iteration=self.global_step)
+                task.logger.report_scalar("train", "lr", lr, iteration=self.global_step)
+                print("✅ ClearML metrics sent successfully")
+            else:
+                print("❌ ClearML: no task or logger")
+        except Exception as e:
+            print(f"❌ ClearML error: {e}")
+        
+           self.global_step += 1
+  ```
+  3. В методе validation_step добавить перед return:  
+  ```python
+          try:
+            from clearml import Task
+            task = Task.current_task()
+            if task and task.logger:
+                task.logger.report_scalar("validation", "loss", loss.item(), iteration=self.global_step)
+        except:
+            pass
+  ```
