@@ -217,5 +217,30 @@ os.environ['FORCE_ATTENTION_IMPLEMENTATION'] = 'eager'
 ```
 
 
+## 05.11.25  
+Добавлено: wandb в offline режиме:  
+
+```python
+# sft_qwen_1.5b.yaml
+trainer:
+  project_name: gsm8k_qwen_sft
+  experiment_name: sft_1.5b_12gb
+  logger: ['console', 'wandb']  
+  default_local_dir: ./checkpoints
+  wandb_dir: ./wandb 
+  wandb_mode: "offline"
+  total_epochs: 1
+  save_freq: 500
+  eval_freq: 100
+  test_freq: 100
+  total_training_steps: 1000
+  seed: 42
+  nnodes: 1
+  n_gpus_per_node: 1
+  save_total_limit: 2
+  logging_steps: 10
+```
+
+
 
 
