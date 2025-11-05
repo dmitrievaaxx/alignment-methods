@@ -261,7 +261,7 @@ api {
   }
 }
 ```
-Поэтому добавляем в `config.yaml`:  
+Поэтому добавляем в `config.yaml` (запушено в репозиторий):  
 ```yaml
   export CLEARML_API_HOST=https://api.clear.ml
   export CLEARML_WEB_HOST=https://app.clear.ml  
