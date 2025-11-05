@@ -218,7 +218,7 @@ os.environ['FORCE_ATTENTION_IMPLEMENTATION'] = 'eager'
 
 
 ## 05.11.25  
-✅ wandb в offline режиме
+1. ✅ wandb в offline режиме
 
 ```python
 # sft_qwen_1.5b.yaml
@@ -245,7 +245,7 @@ trainer:
 - `export WANDB_MODE=offline` после строчки export `TRANSFORMERS_USE_FLASH_ATTENTION=0`
 - `pip install wandb --upgrade` после строчки `pip install accelerate transformers datasets peft wandb hydra-core omegaconf tensordict ray codetiming`
 
-
+2. Для устранения предупреждения в файле `fsdp_sft_trainer.py` исправлены все `FULL_SHARD` на `NO_SHARD`
 
 
 
