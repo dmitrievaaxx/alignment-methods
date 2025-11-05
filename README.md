@@ -289,6 +289,8 @@ pip install clearml
     except Exception as e:
         print(f"ClearML initialization skipped: {e}")
 ```
+
+**Хуйня**  
 - Изменения в файле `fsdp_sft_trainer.py`:
   1. В методе __init__ класса FSDPSFTTrainer добавить строку: `self.global_step = 0`  
   2. В методе training_step добавить перед return:  
