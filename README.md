@@ -218,7 +218,7 @@ os.environ['FORCE_ATTENTION_IMPLEMENTATION'] = 'eager'
 
 
 ## 05.11.25  
-Добавлено: wandb в offline режиме:  
+✅ wandb в offline режиме  
 
 ```python
 # sft_qwen_1.5b.yaml
@@ -240,6 +240,11 @@ trainer:
   save_total_limit: 2
   logging_steps: 10
 ```
+
+В `config.yaml` добавлено: 
+- `export WANDB_MODE=offline` после строчки export `TRANSFORMERS_USE_FLASH_ATTENTION=0`
+- `pip install wandb --upgrade` после строчки `pip install accelerate transformers datasets peft wandb hydra-core omegaconf tensordict ray codetiming`
+
 
 
 
