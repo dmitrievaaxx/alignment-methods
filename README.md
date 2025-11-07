@@ -47,6 +47,8 @@ PS C:\Users\darya\Documents\alignment-methods> python check_verl.py
    python -m datasphere.main project job execute -p bt1jvegm7p69m5a6rnoa -c config.yaml
    ```
 
+   НОВЫЙ ЗАПУСК: `python -m datasphere.main project job execute -p bt1vefhg73kp96vorgo1  -c config.yaml`
+
 ---
 ## 03.11.2025  
 `config.yaml` в корне проекта 
