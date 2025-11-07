@@ -3,17 +3,24 @@ name: wandb-offline-clearML-online
 desc: Simple working version
 
 cmd: |
+  export PYTHONIOENCODING=utf-8
+  export LANG=C.UTF-8
   export PIP_ROOT_USER_ACTION=ignore
   export USE_FLASH_ATTENTION=0
   export TRANSFORMERS_USE_FLASH_ATTENTION=0
   export WANDB_MODE=offline
+  export WANDB_DIR=/job/output/wandb
+
 
   export CLEARML_API_HOST=https://api.clear.ml
   export CLEARML_WEB_HOST=https://app.clear.ml  
   export CLEARML_FILES_HOST=https://files.clear.ml
   export CLEARML_API_ACCESS_KEY="1115V427IJEV3GB0UZMCHFD8XPCLO9"
   export CLEARML_API_SECRET_KEY="3k9gBL0lsd9iKBzHvaUpjwXOYtgI7HObE9De98qMDnrBQ0WZQrwITY9Q2PcR4kWWmPs"
+  
 
+
+  echo "📦 Installing packages..."
   pip install --upgrade pip
   pip install torch==2.5.1+cu121 torchvision==0.20.1+cu121 torchaudio==2.5.1+cu121 --index-url https://download.pytorch.org/whl/cu121
   pip install packaging ninja wheel setuptools psutil
@@ -28,9 +35,37 @@ cmd: |
   cp /job/verl/verl/trainer/sft_qwen_1.5b.yaml /job/verl_config/
   python ${UPDATE_CONFIG} /job/verl_config sft_qwen_1.5b
 
-  python ${CLEARML_SETUP} || echo "ClearML setup completed"
+  mkdir -p /job/output/wandb
+  mkdir -p /job/output/checkpoints
 
   cd /job/verl && PYTHONPATH=/job/verl:$PYTHONPATH python ${DISABLE_FLASH_ATTN} && PYTHONPATH=/job/verl:$PYTHONPATH torchrun --standalone --nnodes=1 --nproc_per_node=1 verl/trainer/fsdp_sft_trainer.py --config-path /job/verl_config --config-name sft_qwen_1.5b data.train_files="[${TRAIN_DATA}]" data.val_files="[${VAL_DATA}]"
+
+  echo "🕒 Waiting for file sync..."
+  sync
+  sleep 30
+
+  echo "📁 Final output structure:"
+  find /job/output -type f -name "*.json" | head -10
+  find /job/output -type f -name "*.txt" | head -10
+  du -sh /job/output/*
+
+  echo "📦 Preparing files for upload..."
+  mkdir -p ${OUTPUT_DIR}
+
+  find /job/output/wandb -type l -delete || true
+  rm -rf /job/output/wandb/wandb/latest-run || true
+
+  cd /job/output
+  tar -czf /job/output/output.tar.gz checkpoints wandb training_completed.txt 2>/dev/null || tar -czf /job/output/output.tar.gz checkpoints wandb 2>/dev/null
+
+  cp /job/output/output.tar.gz ${OUTPUT_DIR}/
+  echo "✅ Archive created: ${OUTPUT_DIR}/output.tar.gz"
+
+  echo "📋 Contents of archive:"
+  tar -tf ${OUTPUT_DIR}/output.tar.gz | head -20
+
+  echo "✅ All files prepared for download"
+
 
 inputs:
   - train_data.parquet: TRAIN_DATA
@@ -38,9 +73,8 @@ inputs:
   - update_config.py: UPDATE_CONFIG
   - verl: VERL_DIR
   - disable_flash_attn.py: DISABLE_FLASH_ATTN
-  - clearml_setup.py: CLEARML_SETUP
 
 outputs:
-  - output_dir: OUTPUT_DIR
+  - output_dir/output.tar.gz: OUTPUT_DIR
 
 cloud-instance-type: g1.1
