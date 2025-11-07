@@ -1,0 +1,57 @@
+# sft_qwen_1.5b.yaml
+trainer:
+  project_name: gsm8k_qwen_sft
+  experiment_name: sft_1.5b_12gb
+  logger: ['console', 'wandb']  
+  default_local_dir: /job/output/checkpoints
+  wandb_dir: /job/output/wandb  
+  default_hdfs_dir: null
+  wandb_mode: "offline"
+  total_epochs: 1
+  save_freq: 500
+  eval_freq: 100
+  test_freq: 100
+  max_steps: 10
+  seed: 42
+  nnodes: 1
+  n_gpus_per_node: 1
+  save_total_limit: 2
+  logging_steps: 10
+
+
+model:
+  partial_pretrain: "Qwen/Qwen2.5-1.5B"
+  trust_remote_code: true
+  strategy: fsdp
+  enable_gradient_checkpointing: true
+  lora_rank: 8
+  lora_alpha: 16
+  target_modules: ["q_proj", "k_proj", "v_proj", "o_proj"]
+  use_flash_attention: false
+  attn_implementation: "eager"
+  dtype: "bfloat16" 
+  fsdp_config:
+    sharding_strategy: "NO_SHARD"
+    mixed_precision: "bf16"
+    use_orig_params: true
+
+optim:
+  lr: 2e-5
+  betas: [0.9, 0.95]
+  weight_decay: 0.01
+  warmup_steps_ratio: 0.03
+  lr_scheduler: cosine
+  clip_grad: 1.0
+
+data:
+  train_files: [] 
+  val_files: []
+  global_batch_size: 32
+  micro_batch_size_per_gpu: 2
+  grad_accumulation_steps: 16
+  max_length: 1024
+  prompt_key: input
+  response_key: output
+  balance_dp_token: true
+  num_workers: 4
+  pin_memory: true
