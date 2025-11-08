@@ -1,3 +1,4 @@
 [submodule "verl"]
 	path = verl
-	url = https://github.com/dmitrievaaxx/verl.git
+	url = https://github.com/KrivosheinaDaria/verl.git
+	branch = sft_alignment
