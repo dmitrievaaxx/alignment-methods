@@ -331,3 +331,9 @@ except Exception as e:
 !pip install wandb -q
 !wandb sync <название файла>.wandb
 ```
+
+## 11.11.25  (в репозиториии изменен файл config.yaml)
+Для библиотеки `vllm` добавить в конфиг после строчки `pip install clearml`:  
+```
+pip install vllm --extra-index-url https://wheels.vllm.ai/stable
+```
