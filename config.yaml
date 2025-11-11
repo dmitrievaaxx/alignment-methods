@@ -1,5 +1,5 @@
 # config.yaml
-name: wandb-offline-clearML-online
+name: with-right-version-vllm
 desc: Simple working version
 
 cmd: |
