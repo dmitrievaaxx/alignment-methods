@@ -11,14 +11,11 @@ cmd: |
   export WANDB_MODE=offline
   export WANDB_DIR=/job/output/wandb
 
-
   export CLEARML_API_HOST=https://api.clear.ml
   export CLEARML_WEB_HOST=https://app.clear.ml  
   export CLEARML_FILES_HOST=https://files.clear.ml
   export CLEARML_API_ACCESS_KEY="1115V427IJEV3GB0UZMCHFD8XPCLO9"
   export CLEARML_API_SECRET_KEY="3k9gBL0lsd9iKBzHvaUpjwXOYtgI7HObE9De98qMDnrBQ0WZQrwITY9Q2PcR4kWWmPs"
-  
-
 
   echo "📦 Installing packages..."
   pip install --upgrade pip
@@ -28,6 +25,7 @@ cmd: |
   pip install accelerate transformers datasets peft wandb hydra-core omegaconf tensordict ray codetiming
   pip install wandb --upgrade
   pip install clearml
+  pip install vllm --extra-index-url https://wheels.vllm.ai/stable
 
   mkdir -p /job
   cp -r ${VERL_DIR} /job/verl
