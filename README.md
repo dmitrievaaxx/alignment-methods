@@ -32,8 +32,8 @@
 но снижают разнообразие генерации при больших k — классический
 alignment tax. Базовая модель обгоняет aligned-модели при k=256.
 
-![GSM8K pass@k](images/gsm8k_pass_at_k.png)  
-![reasoning_gym pass@k](images/reasoning_gym_pass_at_k.png)
+![GSM8K pass@k](images/gsm8k_pass_at_k.jpg)  
+![reasoning_gym pass@k](images/reasoning_gym_pass_at_k.jpg)
 
 ## Стек технологий
 - **Модель:** Qwen2.5-1.5B
