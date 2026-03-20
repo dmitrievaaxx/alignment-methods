@@ -9,7 +9,7 @@
 | Метод | Описание |
 |-------|----------|
 | **SFT** | Supervised Fine-Tuning — дообучение на парах вопрос-ответ |
-| **DFT** | Direct Fine-Tuning — прямое дообучение с фильтрацией данных |
+| **DFT** | Dynamic Fine-Tuning — модификация SFT, где лосс каждого токена взвешивается вероятностью правильного токена по текущей модели|
 | **GRPO** | Group Relative Policy Optimization — RL-метод alignment |
 
 ## Результаты
